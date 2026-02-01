@@ -1,12 +1,12 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace 'com.jtech.dpad'
+    namespace 'com.android.cts.jtech'
     compileSdk 35
 
     defaultConfig {
-        applicationId "com.jtech.dpad"
-        minSdk 24
+        applicationId "com.android.cts.jtech"
+        minSdk 23
         targetSdk 35
         versionCode 1
         versionName "1.0"
