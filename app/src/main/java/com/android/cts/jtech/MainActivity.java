@@ -1,4 +1,4 @@
-package com.jtech.dpad;
+package com.android.cts.jtech;
 
 import android.app.Activity;
 import android.os.Bundle;
