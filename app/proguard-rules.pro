@@ -1,1 +1,1 @@
--keep public class com.jtech.dpad.MainActivity
+-keep public class com.android.cts.jtech.MainActivity
