@@ -35,7 +35,7 @@ public class MainActivity extends Activity {
 
         webView.setWebViewClient(new WebViewClient());
         webView.setWebChromeClient(new WebChromeClient());
-        webView.loadUrl("https://f.dietdroid.com");
+        webView.loadUrl("https://forums.jtechforums.org/dumb");
     }
 
     @Override
