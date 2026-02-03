@@ -207,15 +207,31 @@ public class NtfyService extends Service {
     private void handleMessage(String json) {
         try {
             // Simple JSON parsing without external library
+            String event = extractJsonField(json, "event");
             String title = extractJsonField(json, "title");
             String message = extractJsonField(json, "message");
             String click = extractJsonField(json, "click");
 
+            // Only process actual message events, not open/keepalive
+            if (event != null && !"message".equals(event)) {
+                Log.d(TAG, "Ignoring non-message event: " + event);
+                return;
+            }
+
+            // Skip if no actual message content
+            if (message == null || message.isEmpty()) {
+                Log.d(TAG, "Ignoring message with no content");
+                return;
+            }
+
+            // Skip messages that look like topic names (connection artifacts)
+            if (message.startsWith("dumbcourse-") && message.length() < 50) {
+                Log.d(TAG, "Ignoring topic name message: " + message);
+                return;
+            }
+
             if (title == null || title.isEmpty()) {
                 title = "JtechForums";
-            }
-            if (message == null || message.isEmpty()) {
-                return;
             }
 
             showNotification(title, message, click);
