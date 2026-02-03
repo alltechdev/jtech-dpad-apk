@@ -1,7 +1,9 @@
 package com.android.cts.jtech;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
@@ -19,6 +21,7 @@ public class MainActivity extends Activity {
 
     private WebView webView;
     private static final String BASE_URL = "https://forums.jtechforums.org/dumb";
+    private static final int NOTIFICATION_PERMISSION_CODE = 1001;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +48,9 @@ public class MainActivity extends Activity {
         webView.setWebViewClient(new WebViewClient());
         webView.setWebChromeClient(new WebChromeClient());
 
+        // Request notification permission (Android 13+)
+        requestNotificationPermission();
+
         // Check if opened from notification
         String openUrl = getIntent().getStringExtra("open_url");
         if (openUrl != null && !openUrl.isEmpty()) {
@@ -55,6 +61,23 @@ public class MainActivity extends Activity {
 
         // Start notification service if already configured
         startNtfyServiceIfConfigured();
+    }
+
+    private void requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, NOTIFICATION_PERMISSION_CODE);
+            }
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == NOTIFICATION_PERMISSION_CODE) {
+            // Permission granted or denied - service will work either way on older Android
+            // On Android 13+ without permission, notifications won't show but service still runs
+        }
     }
 
     @Override
