@@ -15,6 +15,8 @@ import android.os.Looper;
 import android.os.PowerManager;
 import android.util.Log;
 
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -206,20 +208,22 @@ public class NtfyService extends Service {
 
     private void handleMessage(String json) {
         try {
-            // Simple JSON parsing without external library
-            String event = extractJsonField(json, "event");
-            String title = extractJsonField(json, "title");
-            String message = extractJsonField(json, "message");
-            String click = extractJsonField(json, "click");
+            Log.d(TAG, "Received JSON: " + json);
+            JSONObject obj = new JSONObject(json);
 
-            // Only process actual message events, not open/keepalive
-            if (event != null && !"message".equals(event)) {
+            // Check event type - filter out non-message events
+            String event = obj.optString("event", "");
+            if (!event.isEmpty() && !"message".equals(event)) {
                 Log.d(TAG, "Ignoring non-message event: " + event);
                 return;
             }
 
+            String title = obj.optString("title", "");
+            String message = obj.optString("message", "");
+            String click = obj.optString("click", "");
+
             // Skip if no actual message content
-            if (message == null || message.isEmpty()) {
+            if (message.isEmpty()) {
                 Log.d(TAG, "Ignoring message with no content");
                 return;
             }
@@ -230,35 +234,14 @@ public class NtfyService extends Service {
                 return;
             }
 
-            if (title == null || title.isEmpty()) {
+            if (title.isEmpty()) {
                 title = "JtechForums";
             }
 
-            showNotification(title, message, click);
+            showNotification(title, message, click.isEmpty() ? null : click);
         } catch (Exception e) {
             Log.e(TAG, "Failed to parse message: " + e.getMessage());
         }
-    }
-
-    private String extractJsonField(String json, String field) {
-        // Simple extraction for "field":"value" or "field": "value"
-        String pattern = "\"" + field + "\"";
-        int idx = json.indexOf(pattern);
-        if (idx < 0) return null;
-
-        int colonIdx = json.indexOf(":", idx + pattern.length());
-        if (colonIdx < 0) return null;
-
-        int startQuote = json.indexOf("\"", colonIdx);
-        if (startQuote < 0) return null;
-
-        int endQuote = json.indexOf("\"", startQuote + 1);
-        if (endQuote < 0) return null;
-
-        return json.substring(startQuote + 1, endQuote)
-            .replace("\\n", "\n")
-            .replace("\\\"", "\"")
-            .replace("\\\\", "\\");
     }
 
     private void showNotification(String title, String message, String clickUrl) {
