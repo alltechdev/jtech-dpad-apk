@@ -18,7 +18,7 @@ import java.util.UUID;
 public class MainActivity extends Activity {
 
     private WebView webView;
-    private static final String BASE_URL = "https://f.dietdroid.com";
+    private static final String BASE_URL = "https://forums.jtechforums.org/dumb";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
