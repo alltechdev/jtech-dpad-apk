@@ -6,6 +6,7 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.TypedValue;
@@ -15,6 +16,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.JavascriptInterface;
+import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -32,8 +34,10 @@ public class MainActivity extends Activity {
     private static final String PREF_FIRST_LAUNCH = "first_launch";
     private static final String BASE_URL = "https://forums.jtechforums.org/dumb";
     private static final int NOTIFICATION_PERMISSION_CODE = 1001;
+    private static final int FILE_CHOOSER_CODE = 1002;
 
     private WebView webView;
+    private ValueCallback<Uri[]> fileChooserCallback;
     private boolean useFullscreen = true; // Default to fullscreen
 
     @Override
@@ -194,7 +198,19 @@ public class MainActivity extends Activity {
         webView.addJavascriptInterface(new PushInterface(), "NtfyBridge");
 
         webView.setWebViewClient(new WebViewClient());
-        webView.setWebChromeClient(new WebChromeClient());
+        webView.setWebChromeClient(new WebChromeClient() {
+            @Override
+            public boolean onShowFileChooser(WebView view, ValueCallback<Uri[]> callback,
+                    FileChooserParams params) {
+                if (fileChooserCallback != null) {
+                    fileChooserCallback.onReceiveValue(null);
+                }
+                fileChooserCallback = callback;
+                Intent intent = params.createIntent();
+                startActivityForResult(intent, FILE_CHOOSER_CODE);
+                return true;
+            }
+        });
 
         // Check if opened from notification
         String openUrl = getIntent().getStringExtra("open_url");
@@ -206,6 +222,20 @@ public class MainActivity extends Activity {
 
         // Start notification service if already configured
         startNtfyServiceIfConfigured();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == FILE_CHOOSER_CODE) {
+            if (fileChooserCallback != null) {
+                Uri[] results = (resultCode == RESULT_OK && data != null)
+                    ? new Uri[]{data.getData()} : null;
+                fileChooserCallback.onReceiveValue(results);
+                fileChooserCallback = null;
+            }
+        } else {
+            super.onActivityResult(requestCode, resultCode, data);
+        }
     }
 
     @Override
