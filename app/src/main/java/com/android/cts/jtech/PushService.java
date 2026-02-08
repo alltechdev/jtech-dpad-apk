@@ -89,14 +89,13 @@ public class PushService extends Service {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationManager nm = getSystemService(NotificationManager.class);
 
-            // Foreground service channel (minimal - hidden from status bar)
+            // Foreground service channel (silent)
             NotificationChannel serviceChannel = new NotificationChannel(
                 CHANNEL_ID,
                 "Notification Service",
-                NotificationManager.IMPORTANCE_MIN
+                NotificationManager.IMPORTANCE_LOW
             );
             serviceChannel.setDescription("Keeps push notifications active");
-            serviceChannel.setShowBadge(false);
             nm.createNotificationChannel(serviceChannel);
 
             // Message channel (with sound)
