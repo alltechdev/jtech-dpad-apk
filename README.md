@@ -4,7 +4,7 @@
 
 ## JtechForums App
 
-Android app for [JtechForums](https://forums.jtechforums.org/dumb) with D-Pad navigation support and push notifications (ntfy).
+Android app for [JtechForums](https://forums.jtechforums.org/dumb) with D-Pad navigation support and push notifications.
 
 ## About
 
