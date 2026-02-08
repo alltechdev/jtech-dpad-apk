@@ -195,7 +195,7 @@ public class MainActivity extends Activity {
         settings.setDomStorageEnabled(true);
 
         // Add JavaScript interface for push notifications
-        webView.addJavascriptInterface(new PushInterface(), "NtfyBridge");
+        webView.addJavascriptInterface(new PushInterface(), "PushBridge");
 
         webView.setWebViewClient(new WebViewClient());
         webView.setWebChromeClient(new WebChromeClient() {
@@ -221,7 +221,7 @@ public class MainActivity extends Activity {
         }
 
         // Start notification service if already configured
-        startNtfyServiceIfConfigured();
+        startPushServiceIfConfigured();
     }
 
     @Override
@@ -247,10 +247,10 @@ public class MainActivity extends Activity {
         }
     }
 
-    private void startNtfyServiceIfConfigured() {
-        String topic = NtfyService.getTopic(this);
+    private void startPushServiceIfConfigured() {
+        String topic = PushService.getTopic(this);
         if (topic != null && !topic.isEmpty()) {
-            Intent serviceIntent = new Intent(this, NtfyService.class);
+            Intent serviceIntent = new Intent(this, PushService.class);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 startForegroundService(serviceIntent);
             } else {
@@ -288,7 +288,7 @@ public class MainActivity extends Activity {
 
     /**
      * JavaScript interface for push notification registration.
-     * Call from JS: NtfyBridge.registerPush(server, topic)
+     * Call from JS: PushBridge.registerPush(server, topic)
      */
     public class PushInterface {
 
@@ -309,20 +309,20 @@ public class MainActivity extends Activity {
 
         @JavascriptInterface
         public String getTopic() {
-            return NtfyService.getTopic(MainActivity.this);
+            return PushService.getTopic(MainActivity.this);
         }
 
         @JavascriptInterface
         public String getServer() {
-            return NtfyService.getServer(MainActivity.this);
+            return PushService.getServer(MainActivity.this);
         }
 
         @JavascriptInterface
         public void registerPush(String server, String topic) {
-            NtfyService.configure(MainActivity.this, server, topic);
+            PushService.configure(MainActivity.this, server, topic);
 
             // Start the service
-            Intent serviceIntent = new Intent(MainActivity.this, NtfyService.class);
+            Intent serviceIntent = new Intent(MainActivity.this, PushService.class);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 startForegroundService(serviceIntent);
             } else {
@@ -333,17 +333,17 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public void unregisterPush() {
             // Stop service
-            Intent serviceIntent = new Intent(MainActivity.this, NtfyService.class);
+            Intent serviceIntent = new Intent(MainActivity.this, PushService.class);
             serviceIntent.setAction("STOP");
             startService(serviceIntent);
 
             // Clear config
-            NtfyService.configure(MainActivity.this, "", "");
+            PushService.configure(MainActivity.this, "", "");
         }
 
         @JavascriptInterface
         public boolean isRegistered() {
-            String topic = NtfyService.getTopic(MainActivity.this);
+            String topic = PushService.getTopic(MainActivity.this);
             return topic != null && !topic.isEmpty();
         }
 

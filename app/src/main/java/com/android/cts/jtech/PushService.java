@@ -22,16 +22,17 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-public class NtfyService extends Service {
-    private static final String TAG = "NtfyService";
-    private static final String CHANNEL_ID = "ntfy_channel";
-    private static final String PREFS_NAME = "ntfy_prefs";
+public class PushService extends Service {
+    private static final String TAG = "PushService";
+    private static final String CHANNEL_ID = "push_channel";
+    private static final String PREFS_NAME = "push_prefs";
     private static final String PREF_TOPIC = "topic";
     private static final String PREF_SERVER = "server";
     private static final int NOTIFICATION_ID = 1;
     private static final int RECONNECT_DELAY_MS = 5000;
 
     private volatile boolean running = false;
+    private volatile HttpURLConnection currentConnection;
     private Thread sseThread;
     private Handler mainHandler;
     private PowerManager.WakeLock wakeLock;
@@ -44,7 +45,7 @@ public class NtfyService extends Service {
         createNotificationChannel();
 
         PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-        wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "NtfyService::WakeLock");
+        wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "PushService::WakeLock");
     }
 
     @Override
@@ -59,6 +60,9 @@ public class NtfyService extends Service {
         if (!running) {
             running = true;
             startSSE();
+        } else {
+            // Service already running - force reconnect to pick up new server/topic from prefs
+            forceReconnect();
         }
 
         return START_STICKY;
@@ -85,18 +89,19 @@ public class NtfyService extends Service {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationManager nm = getSystemService(NotificationManager.class);
 
-            // Foreground service channel (silent)
+            // Foreground service channel (minimal - hidden from status bar)
             NotificationChannel serviceChannel = new NotificationChannel(
                 CHANNEL_ID,
                 "Notification Service",
-                NotificationManager.IMPORTANCE_LOW
+                NotificationManager.IMPORTANCE_MIN
             );
             serviceChannel.setDescription("Keeps push notifications active");
+            serviceChannel.setShowBadge(false);
             nm.createNotificationChannel(serviceChannel);
 
             // Message channel (with sound)
             NotificationChannel msgChannel = new NotificationChannel(
-                "ntfy_messages",
+                "push_messages",
                 "Forum Notifications",
                 NotificationManager.IMPORTANCE_HIGH
             );
@@ -156,10 +161,16 @@ public class NtfyService extends Service {
     private void connectAndListen() {
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         String topic = prefs.getString(PREF_TOPIC, null);
-        String server = prefs.getString(PREF_SERVER, "https://ntfy.sh");
+        String server = prefs.getString(PREF_SERVER, "");
 
         if (topic == null || topic.isEmpty()) {
             Log.w(TAG, "No topic configured");
+            try { Thread.sleep(10000); } catch (InterruptedException ignored) {}
+            return;
+        }
+
+        if (server == null || server.isEmpty()) {
+            Log.w(TAG, "No server configured");
             try { Thread.sleep(10000); } catch (InterruptedException ignored) {}
             return;
         }
@@ -168,11 +179,12 @@ public class NtfyService extends Service {
         BufferedReader reader = null;
 
         try {
-            String sseUrl = server + "/" + topic + "/sse";
+            String sseUrl = server + "/" + topic;
             Log.i(TAG, "Connecting to: " + sseUrl);
 
             URL url = new URL(sseUrl);
             conn = (HttpURLConnection) url.openConnection();
+            currentConnection = conn;
             conn.setRequestMethod("GET");
             conn.setRequestProperty("Accept", "text/event-stream");
             conn.setConnectTimeout(30000);
@@ -201,8 +213,21 @@ public class NtfyService extends Service {
         } catch (Exception e) {
             Log.e(TAG, "Connection error: " + e.getMessage());
         } finally {
+            currentConnection = null;
             try { if (reader != null) reader.close(); } catch (Exception ignored) {}
             try { if (conn != null) conn.disconnect(); } catch (Exception ignored) {}
+        }
+    }
+
+    private void forceReconnect() {
+        HttpURLConnection conn = currentConnection;
+        if (conn != null) {
+            Log.i(TAG, "Forcing reconnect to pick up new prefs");
+            try {
+                conn.disconnect();
+            } catch (Exception e) {
+                Log.w(TAG, "Error disconnecting: " + e.getMessage());
+            }
         }
     }
 
@@ -259,7 +284,7 @@ public class NtfyService extends Service {
 
             Notification.Builder builder;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                builder = new Notification.Builder(this, "ntfy_messages");
+                builder = new Notification.Builder(this, "push_messages");
             } else {
                 builder = new Notification.Builder(this);
                 builder.setPriority(Notification.PRIORITY_HIGH);
@@ -294,6 +319,6 @@ public class NtfyService extends Service {
 
     public static String getServer(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-        return prefs.getString(PREF_SERVER, "https://ntfy.sh");
+        return prefs.getString(PREF_SERVER, "");
     }
 }

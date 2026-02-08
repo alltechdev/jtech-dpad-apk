@@ -9,9 +9,9 @@ public class BootReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         if (Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())) {
-            String topic = NtfyService.getTopic(context);
+            String topic = PushService.getTopic(context);
             if (topic != null && !topic.isEmpty()) {
-                Intent serviceIntent = new Intent(context, NtfyService.class);
+                Intent serviceIntent = new Intent(context, PushService.class);
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     context.startForegroundService(serviceIntent);
                 } else {
