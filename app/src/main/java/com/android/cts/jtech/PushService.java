@@ -12,7 +12,6 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
-import android.os.PowerManager;
 import android.util.Log;
 
 import org.json.JSONObject;
@@ -35,7 +34,6 @@ public class PushService extends Service {
     private volatile HttpURLConnection currentConnection;
     private Thread sseThread;
     private Handler mainHandler;
-    private PowerManager.WakeLock wakeLock;
     private int notificationCounter = 100;
 
     @Override
@@ -43,9 +41,6 @@ public class PushService extends Service {
         super.onCreate();
         mainHandler = new Handler(Looper.getMainLooper());
         createNotificationChannel();
-
-        PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-        wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "PushService::WakeLock");
     }
 
     @Override
@@ -86,9 +81,6 @@ public class PushService extends Service {
         running = false;
         if (sseThread != null) {
             sseThread.interrupt();
-        }
-        if (wakeLock != null && wakeLock.isHeld()) {
-            wakeLock.release();
         }
         super.onDestroy();
     }
@@ -150,9 +142,6 @@ public class PushService extends Service {
         sseThread = new Thread(() -> {
             while (running) {
                 try {
-                    if (wakeLock != null && !wakeLock.isHeld()) {
-                        wakeLock.acquire(60 * 60 * 1000L); // 1 hour max
-                    }
                     connectAndListen();
                 } catch (Exception e) {
                     Log.e(TAG, "SSE error: " + e.getMessage());
