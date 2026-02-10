@@ -30,6 +30,8 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 public class MainActivity extends Activity {
@@ -217,7 +219,38 @@ public class MainActivity extends Activity {
         // Add JavaScript interface for push notifications
         webView.addJavascriptInterface(new PushInterface(), "PushBridge");
 
-        webView.setWebViewClient(new WebViewClient());
+        webView.setWebViewClient(new WebViewClient() {
+            private final List<String> allowedDomains = Arrays.asList(
+                "forums.jtechforums.org",
+                "drive.usercontent.google.com",
+                "drive.google.com",
+                "dropbox.com",
+                "github.com",
+                "release-assets.githubusercontent.com"
+            );
+
+            private boolean isAllowed(String url) {
+                String host = Uri.parse(url).getHost();
+                if (host == null) return false;
+                host = host.toLowerCase();
+                for (String domain : allowedDomains) {
+                    if (host.equals(domain) || host.equals("www." + domain)
+                            || host.endsWith("." + domain)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                if (isAllowed(url)) {
+                    return false;
+                }
+                Toast.makeText(MainActivity.this, "Not allowed", Toast.LENGTH_SHORT).show();
+                return true;
+            }
+        });
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
             public boolean onShowFileChooser(WebView view, ValueCallback<Uri[]> callback,
