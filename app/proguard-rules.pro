@@ -1,1 +1,4 @@
--keep public class com.jtech.dpad.MainActivity
+-keep public class com.android.cts.jtech.MainActivity
+-keep public class com.android.cts.jtech.PushService
+-keep public class com.android.cts.jtech.BootReceiver
+-keep public class com.android.cts.jtech.NotificationControlReceiver

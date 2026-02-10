@@ -55,7 +55,20 @@ public class PushService extends Service {
             return START_NOT_STICKY;
         }
 
+        if (intent != null && "UPDATE_FOREGROUND".equals(intent.getAction())) {
+            if (isServiceNotifEnabled(this)) {
+                startForeground(NOTIFICATION_ID, buildForegroundNotification());
+            } else {
+                stopForeground(STOP_FOREGROUND_REMOVE);
+            }
+            return START_STICKY;
+        }
+
         startForeground(NOTIFICATION_ID, buildForegroundNotification());
+
+        if (!isServiceNotifEnabled(this)) {
+            stopForeground(STOP_FOREGROUND_REMOVE);
+        }
 
         if (!running) {
             running = true;
@@ -269,6 +282,10 @@ public class PushService extends Service {
     }
 
     private void showNotification(String title, String message, String clickUrl) {
+        if (!isMessagesNotifEnabled(this)) {
+            Log.d(TAG, "Message notifications disabled, skipping");
+            return;
+        }
         mainHandler.post(() -> {
             Intent intent = new Intent(this, MainActivity.class);
             if (clickUrl != null && !clickUrl.isEmpty()) {
@@ -301,6 +318,16 @@ public class PushService extends Service {
             NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
             nm.notify(notificationCounter++, notification);
         });
+    }
+
+    public static boolean isMessagesNotifEnabled(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        return prefs.getBoolean(NotificationControlReceiver.PREF_MESSAGES_ENABLED, true);
+    }
+
+    public static boolean isServiceNotifEnabled(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        return prefs.getBoolean(NotificationControlReceiver.PREF_SERVICE_ENABLED, true);
     }
 
     public static void configure(Context context, String server, String topic) {
