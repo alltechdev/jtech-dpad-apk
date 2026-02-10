@@ -3,12 +3,17 @@ package com.android.cts.jtech;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.DownloadManager;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.webkit.CookieManager;
+import android.webkit.URLUtil;
+import android.widget.Toast;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
@@ -35,10 +40,14 @@ public class MainActivity extends Activity {
     private static final String BASE_URL = "https://forums.jtechforums.org/dumb";
     private static final int NOTIFICATION_PERMISSION_CODE = 1001;
     private static final int FILE_CHOOSER_CODE = 1002;
+    private static final int STORAGE_PERMISSION_CODE = 1003;
 
     private WebView webView;
     private ValueCallback<Uri[]> fileChooserCallback;
     private boolean useFullscreen = true; // Default to fullscreen
+    private String pendingDownloadUrl;
+    private String pendingDownloadContentDisposition;
+    private String pendingDownloadMimetype;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,6 +93,17 @@ public class MainActivity extends Activity {
         if (requestCode == NOTIFICATION_PERMISSION_CODE) {
             // Permission granted or denied - service will work either way on older Android
             // On Android 13+ without permission, notifications won't show but service still runs
+        } else if (requestCode == STORAGE_PERMISSION_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                if (pendingDownloadUrl != null) {
+                    startDownload(pendingDownloadUrl, pendingDownloadContentDisposition, pendingDownloadMimetype);
+                }
+            } else {
+                Toast.makeText(this, "Storage permission required for downloads", Toast.LENGTH_SHORT).show();
+            }
+            pendingDownloadUrl = null;
+            pendingDownloadContentDisposition = null;
+            pendingDownloadMimetype = null;
         }
     }
 
@@ -212,6 +232,18 @@ public class MainActivity extends Activity {
             }
         });
 
+        webView.setDownloadListener((url, userAgent, contentDisposition, mimetype, contentLength) -> {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && Build.VERSION.SDK_INT < Build.VERSION_CODES.Q
+                    && checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                pendingDownloadUrl = url;
+                pendingDownloadContentDisposition = contentDisposition;
+                pendingDownloadMimetype = mimetype;
+                requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, STORAGE_PERMISSION_CODE);
+                return;
+            }
+            startDownload(url, contentDisposition, mimetype);
+        });
+
         // Check if opened from notification
         String openUrl = getIntent().getStringExtra("open_url");
         if (openUrl != null && !openUrl.isEmpty()) {
@@ -265,6 +297,24 @@ public class MainActivity extends Activity {
         if (hasFocus && useFullscreen) {
             hideSystemUI();
         }
+    }
+
+    private void startDownload(String url, String contentDisposition, String mimetype) {
+        // Pass null mimetype so guessFileName preserves the original extension
+        // instead of remapping it (e.g. .apk -> .bin) based on MIME type
+        String fileName = URLUtil.guessFileName(url, contentDisposition, null);
+        DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
+        request.setMimeType(mimetype);
+        String cookie = CookieManager.getInstance().getCookie(url);
+        if (cookie != null) {
+            request.addRequestHeader("Cookie", cookie);
+        }
+        request.setTitle(fileName);
+        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+        request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName);
+        DownloadManager dm = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+        dm.enqueue(request);
+        Toast.makeText(this, "Downloading " + fileName, Toast.LENGTH_SHORT).show();
     }
 
     private void hideSystemUI() {
