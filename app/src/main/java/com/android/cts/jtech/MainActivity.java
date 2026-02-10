@@ -251,11 +251,7 @@ public class MainActivity extends Activity {
         String topic = PushService.getTopic(this);
         if (topic != null && !topic.isEmpty()) {
             Intent serviceIntent = new Intent(this, PushService.class);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                startForegroundService(serviceIntent);
-            } else {
-                startService(serviceIntent);
-            }
+            startService(serviceIntent);
         }
     }
 
@@ -323,11 +319,7 @@ public class MainActivity extends Activity {
 
             // Start the service
             Intent serviceIntent = new Intent(MainActivity.this, PushService.class);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                startForegroundService(serviceIntent);
-            } else {
-                startService(serviceIntent);
-            }
+            startService(serviceIntent);
         }
 
         @JavascriptInterface

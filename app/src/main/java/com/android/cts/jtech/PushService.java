@@ -23,11 +23,9 @@ import java.net.URL;
 
 public class PushService extends Service {
     private static final String TAG = "PushService";
-    private static final String CHANNEL_ID = "push_channel";
     private static final String PREFS_NAME = "push_prefs";
     private static final String PREF_TOPIC = "topic";
     private static final String PREF_SERVER = "server";
-    private static final int NOTIFICATION_ID = 1;
     private static final int RECONNECT_DELAY_MS = 5000;
 
     private volatile boolean running = false;
@@ -48,21 +46,6 @@ public class PushService extends Service {
         if (intent != null && "STOP".equals(intent.getAction())) {
             stopSelf();
             return START_NOT_STICKY;
-        }
-
-        if (intent != null && "UPDATE_FOREGROUND".equals(intent.getAction())) {
-            if (isServiceNotifEnabled(this)) {
-                startForeground(NOTIFICATION_ID, buildForegroundNotification());
-            } else {
-                stopForeground(STOP_FOREGROUND_REMOVE);
-            }
-            return START_STICKY;
-        }
-
-        startForeground(NOTIFICATION_ID, buildForegroundNotification());
-
-        if (!isServiceNotifEnabled(this)) {
-            stopForeground(STOP_FOREGROUND_REMOVE);
         }
 
         if (!running) {
@@ -94,16 +77,6 @@ public class PushService extends Service {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationManager nm = getSystemService(NotificationManager.class);
 
-            // Foreground service channel (silent)
-            NotificationChannel serviceChannel = new NotificationChannel(
-                CHANNEL_ID,
-                "Notification Service",
-                NotificationManager.IMPORTANCE_LOW
-            );
-            serviceChannel.setDescription("Keeps push notifications active");
-            nm.createNotificationChannel(serviceChannel);
-
-            // Message channel (with sound)
             NotificationChannel msgChannel = new NotificationChannel(
                 "push_messages",
                 "Forum Notifications",
@@ -112,30 +85,6 @@ public class PushService extends Service {
             msgChannel.setDescription("New replies and messages");
             nm.createNotificationChannel(msgChannel);
         }
-    }
-
-    private Notification buildForegroundNotification() {
-        Intent notificationIntent = new Intent(this, MainActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(
-            this, 0, notificationIntent,
-            PendingIntent.FLAG_IMMUTABLE
-        );
-
-        Notification.Builder builder;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            builder = new Notification.Builder(this, CHANNEL_ID);
-        } else {
-            builder = new Notification.Builder(this);
-            builder.setPriority(Notification.PRIORITY_LOW);
-        }
-
-        return builder
-            .setContentTitle("JtechForums")
-            .setContentText("Listening for notifications")
-            .setSmallIcon(android.R.drawable.ic_dialog_info)
-            .setContentIntent(pendingIntent)
-            .setOngoing(true)
-            .build();
     }
 
     private void startSSE() {
@@ -312,11 +261,6 @@ public class PushService extends Service {
     public static boolean isMessagesNotifEnabled(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         return prefs.getBoolean(NotificationControlReceiver.PREF_MESSAGES_ENABLED, true);
-    }
-
-    public static boolean isServiceNotifEnabled(Context context) {
-        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-        return prefs.getBoolean(NotificationControlReceiver.PREF_SERVICE_ENABLED, true);
     }
 
     public static void configure(Context context, String server, String topic) {
