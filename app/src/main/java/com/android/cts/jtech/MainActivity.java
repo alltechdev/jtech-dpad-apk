@@ -221,6 +221,7 @@ public class MainActivity extends Activity {
 
         webView.setWebViewClient(new WebViewClient() {
             private final List<String> allowedDomains = Arrays.asList(
+                "jtechforums.org",
                 "forums.jtechforums.org",
                 "drive.usercontent.google.com",
                 "drive.google.com",
