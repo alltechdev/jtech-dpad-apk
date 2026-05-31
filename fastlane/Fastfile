@@ -1,0 +1,47 @@
+default_platform(:android)
+
+platform :android do
+
+  desc "Build a signed release AAB"
+  lane :build do
+    gradle(
+      task: "bundle",
+      build_type: "Release",
+      print_command: false,
+      properties: {
+        "android.injected.signing.store.file"     => ENV["KEYSTORE_FILE"],
+        "android.injected.signing.store.password" => ENV["KEYSTORE_PASSWORD"],
+        "android.injected.signing.key.alias"      => ENV["KEY_ALIAS"],
+        "android.injected.signing.key.password"   => ENV["KEY_PASSWORD"],
+      }
+    )
+  end
+
+  desc "Build and upload to Play Store internal track"
+  lane :deploy do |options|
+    track = options[:track] || "internal"
+    build
+    upload_to_play_store(
+      track: track,
+      aab: "app/build/outputs/bundle/release/app-release.aab",
+      skip_upload_apk: true,
+      skip_upload_metadata: false,
+      skip_upload_changelogs: false,
+      skip_upload_images: false,
+      skip_upload_screenshots: false,
+    )
+  end
+
+  desc "Upload metadata/screenshots only (no new build)"
+  lane :upload_metadata do
+    upload_to_play_store(
+      skip_upload_apk: true,
+      skip_upload_aab: true,
+      skip_upload_metadata: false,
+      skip_upload_changelogs: false,
+      skip_upload_images: false,
+      skip_upload_screenshots: false,
+    )
+  end
+
+end

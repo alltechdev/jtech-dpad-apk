@@ -1,0 +1,1 @@
+Security improvements and stability fixes. Strengthened URL validation, enhanced notification service reliability, improved back-navigation handling, and added network security configuration.

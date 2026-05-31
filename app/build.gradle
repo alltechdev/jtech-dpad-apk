@@ -5,7 +5,7 @@ android {
     compileSdk 35
 
     defaultConfig {
-        applicationId "com.android.cts.jtech"
+        applicationId "com.jtech.forums"
         minSdk 23
         targetSdk 35
         versionCode 5

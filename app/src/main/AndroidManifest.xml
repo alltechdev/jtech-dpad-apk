@@ -3,7 +3,7 @@
 
     <!-- Only apps signed with the same key (or ADB shell) may send NOTIFICATION_CONTROL intents -->
     <permission
-        android:name="com.android.cts.jtech.CONTROL_NOTIFICATIONS"
+        android:name="com.jtech.forums.CONTROL_NOTIFICATIONS"
         android:protectionLevel="signature" />
 
     <uses-permission android:name="android.permission.INTERNET" />
@@ -49,9 +49,9 @@
         <receiver
             android:name=".NotificationControlReceiver"
             android:exported="true"
-            android:permission="com.android.cts.jtech.CONTROL_NOTIFICATIONS">
+            android:permission="com.jtech.forums.CONTROL_NOTIFICATIONS">
             <intent-filter>
-                <action android:name="com.android.cts.jtech.NOTIFICATION_CONTROL" />
+                <action android:name="com.jtech.forums.NOTIFICATION_CONTROL" />
             </intent-filter>
         </receiver>
     </application>

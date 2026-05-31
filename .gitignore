@@ -17,3 +17,8 @@ CLAUDE.md
 *.p12
 .env
 *.env
+*play-store-key*.json
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output

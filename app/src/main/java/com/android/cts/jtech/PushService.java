@@ -155,7 +155,7 @@ public class PushService extends Service {
         return builder
             .setContentTitle("JtechForums")
             .setContentText("Listening for notifications")
-            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setSmallIcon(R.drawable.ic_notification)
             .setContentIntent(pendingIntent)
             .setOngoing(true)
             .build();
@@ -378,7 +378,7 @@ public class PushService extends Service {
             Notification notification = builder
                 .setContentTitle(title)
                 .setContentText(message)
-                .setSmallIcon(android.R.drawable.ic_dialog_email)
+                .setSmallIcon(R.drawable.ic_notification)
                 .setContentIntent(pendingIntent)
                 .setAutoCancel(true)
                 .setDefaults(Notification.DEFAULT_ALL)

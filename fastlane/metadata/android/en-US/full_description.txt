@@ -1,0 +1,29 @@
+JtechForums is the official Android app for jtechforums.org — a fast, minimal Discourse forum that runs on everything from old phones to Android TV boxes.
+
+FEATURES
+
+• Push notifications — get alerted when someone replies to your posts or mentions you, even with the app closed. No third-party push service required.
+
+• D-Pad and remote navigation — designed from the ground up for Android TV, Fire TV sticks, and any device with a directional pad or remote control. Navigate threads and posts without a touchscreen.
+
+• File upload and download — attach images and files from your device and download forum attachments directly to your Downloads folder.
+
+• Two display modes — choose Small Screen (fullscreen, no notch) or Normal Screen (with action bar) on first launch, based on your device.
+
+• Lightweight — no heavyweight framework, no background tracking, no ads. Just the forum.
+
+• Auto-start on boot — the notification listener restarts automatically after a reboot so you never miss a reply.
+
+• Broad compatibility — works on Android 6.0 (Marshmallow) and above, including older Fire tablets and set-top boxes.
+
+PRIVACY
+
+JtechForums generates a local device ID stored only on your device, used solely to route push notifications from jtechforums.org to your device. No personal data is collected or shared with third parties. All browsing stays between you and jtechforums.org.
+
+PERMISSIONS
+
+• Internet — required for forum access and push notifications
+• Post Notifications — to deliver forum reply and mention alerts
+• Foreground Service — keeps the notification listener active while the app is in the background
+• Receive Boot Completed — restarts the notification service after a device reboot
+• Write External Storage (Android 9 and below only) — required to save downloaded files

@@ -22,7 +22,7 @@ import static org.junit.Assert.*;
 @Config(sdk = 29)
 public class NotificationReceiverTest {
 
-    private static final String ACTION = "com.android.cts.jtech.NOTIFICATION_CONTROL";
+    private static final String ACTION = "com.jtech.forums.NOTIFICATION_CONTROL";
     private static final String PREFS = "push_prefs";
 
     private Context context;
@@ -82,7 +82,7 @@ public class NotificationReceiverTest {
 
     @Test
     public void onReceive_wrongAction_doesNothing() {
-        Intent intent = new Intent("com.android.cts.jtech.SOME_OTHER_ACTION");
+        Intent intent = new Intent("com.jtech.forums.SOME_OTHER_ACTION");
         intent.putExtra("type", "messages");
         intent.putExtra("enabled", false);
 

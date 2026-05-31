@@ -9,7 +9,7 @@ import android.util.Log;
 
 public class NotificationControlReceiver extends BroadcastReceiver {
     private static final String TAG = "NotifControl";
-    private static final String ACTION = "com.android.cts.jtech.NOTIFICATION_CONTROL";
+    private static final String ACTION = "com.jtech.forums.NOTIFICATION_CONTROL";
     private static final String PREFS_NAME = "push_prefs";
 
     public static final String PREF_MESSAGES_ENABLED = "notif_messages_enabled";
