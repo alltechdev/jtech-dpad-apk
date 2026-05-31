@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Enforces HTTPS-only traffic for the entire app (API 24+).
+    On API 23, this attribute is ignored; HTTPS is enforced at the app layer
+    via isAllowed() scheme check and registerPush() HTTPS validation.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>

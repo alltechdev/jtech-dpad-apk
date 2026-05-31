@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- Only apps signed with the same key (or ADB shell) may send NOTIFICATION_CONTROL intents -->
+    <permission
+        android:name="com.android.cts.jtech.CONTROL_NOTIFICATIONS"
+        android:protectionLevel="signature" />
+
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
@@ -10,6 +15,9 @@
 
     <application
         android:allowBackup="false"
+        android:fullBackupContent="@xml/backup_rules"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:networkSecurityConfig="@xml/network_security_config"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme">
@@ -40,7 +48,8 @@
 
         <receiver
             android:name=".NotificationControlReceiver"
-            android:exported="true">
+            android:exported="true"
+            android:permission="com.android.cts.jtech.CONTROL_NOTIFICATIONS">
             <intent-filter>
                 <action android:name="com.android.cts.jtech.NOTIFICATION_CONTROL" />
             </intent-filter>

@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">JtechForums</string>
+    <string name="first_launch_title">Screen Type</string>
+    <string name="btn_small_screen">Small Screen (no notch)</string>
+    <string name="btn_normal_screen">Normal Screen (has notch)</string>
 </resources>

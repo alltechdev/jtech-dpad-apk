@@ -10,6 +10,7 @@ android {
         targetSdk 35
         versionCode 5
         versionName "2.3"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     signingConfigs {
@@ -34,7 +35,38 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
+        }
+    }
+
+    lint {
+        // targetSdk 35 < latest (36); can't bump targetSdk without also upgrading AGP
+        disable 'OldTargetApi'
+    }
 }
 
 dependencies {
+    // AndroidX Activity — provides ComponentActivity, OnBackPressedDispatcher,
+    // and registerForActivityResult(); replaces deprecated onBackPressed() and
+    // startActivityForResult() / onActivityResult() from android.app.Activity.
+    // 1.9.3 is the latest compatible with AGP 8.1.4; 1.13.0+ requires AGP 8.9.1
+    implementation 'androidx.activity:activity:1.9.3'
+
+    // Unit tests — JUnit4 + Robolectric for Android context without a device
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.robolectric:robolectric:4.12.2'
+
+    // Instrumented tests — AndroidX Test 1.7.x + Espresso 3.7.0 (API 34/35/36 compatible)
+    androidTestImplementation 'androidx.test:core:1.7.0'
+    androidTestImplementation 'androidx.test:runner:1.7.0'
+    androidTestImplementation 'androidx.test:rules:1.7.0'
+    androidTestImplementation 'androidx.test.ext:junit:1.3.0'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.7.0'
+    // UIAutomator: accessibility-layer interaction — delivers key events and clicks to
+    // any window (including AlertDialogs) on all API levels, unlike Espresso's Instrumentation
+    // which fails to reach dialog windows on API 34+ and physical devices.
+    androidTestImplementation 'androidx.test.uiautomator:uiautomator:2.3.0'
 }

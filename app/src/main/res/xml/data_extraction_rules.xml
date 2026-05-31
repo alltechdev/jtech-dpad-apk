@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Android 12+ backup/transfer rules. Mirrors the intent of allowBackup="false":
+    no cloud backup and no device-to-device transfer of app data.
+    allowBackup="false" in the manifest still applies to API 11-30.
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="root" path="." />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="root" path="." />
+    </device-transfer>
+</data-extraction-rules>

@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.util.Log;
 
 public class NotificationControlReceiver extends BroadcastReceiver {
@@ -44,9 +45,19 @@ public class NotificationControlReceiver extends BroadcastReceiver {
                 prefs.edit().putBoolean(PREF_SERVICE_ENABLED, enabled).apply();
                 Log.i(TAG, "Service notification " + (enabled ? "enabled" : "disabled"));
 
-                Intent serviceIntent = new Intent(context, PushService.class);
-                serviceIntent.setAction("UPDATE_FOREGROUND");
-                context.startService(serviceIntent);
+                // Only update an already-running (configured) service.
+                // On API 26+, startService() to an existing foreground service is allowed
+                // from a background context; starting a brand-new service is not.
+                // Skipping when not configured prevents launching a zombie service.
+                if (PushService.getTopic(context) != null) {
+                    Intent serviceIntent = new Intent(context, PushService.class);
+                    serviceIntent.setAction("UPDATE_FOREGROUND");
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        context.startForegroundService(serviceIntent);
+                    } else {
+                        context.startService(serviceIntent);
+                    }
+                }
                 break;
 
             default:

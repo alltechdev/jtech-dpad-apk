@@ -11,3 +11,9 @@
 *.jks
 local.properties
 CLAUDE.md
+
+# secrets — never commit
+*.keystore
+*.p12
+.env
+*.env

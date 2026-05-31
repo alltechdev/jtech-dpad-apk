@@ -13,4 +13,13 @@ allprojects {
         google()
         mavenCentral()
     }
+    // kotlin-stdlib 1.8+ merged -jdk7 / -jdk8 into the main artifact.
+    // Force a single version so older transitive deps don't create duplicate classes.
+    configurations.all {
+        resolutionStrategy {
+            force 'org.jetbrains.kotlin:kotlin-stdlib:1.8.22'
+            force 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22'
+            force 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22'
+        }
+    }
 }

@@ -7,15 +7,4 @@
         <item name="android:actionBarSize">24dp</item>
     </style>
 
-    <style name="CompactDialog" parent="android:Theme.DeviceDefault.Dialog.Alert">
-        <item name="android:windowMinWidthMajor">60%</item>
-        <item name="android:windowMinWidthMinor">60%</item>
-        <item name="android:textSize">12sp</item>
-        <item name="android:windowTitleStyle">@style/DialogTitle</item>
-    </style>
-
-    <style name="DialogTitle" parent="android:TextAppearance.DeviceDefault.DialogWindowTitle">
-        <item name="android:gravity">center</item>
-        <item name="android:textAlignment">center</item>
-    </style>
 </resources>
